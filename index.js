@@ -23,6 +23,16 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // await client.connect();
+    const galleryDataCollection = client
+      .db("imageGalleryDB ")
+      .collection("images");
+
+    // post gallery data(image) to database
+    app.post("/upload-image", async (req, res) => {
+      const imageData = req.body;
+      const result = await usersCollection.insertOne(imageData);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
