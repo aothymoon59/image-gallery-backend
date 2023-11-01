@@ -8,7 +8,7 @@ require("dotenv").config();
 app.use(cors());
 app.use(express.json());
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 // const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.tgrk550.mongodb.net/?retryWrites=true&w=majority`;
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.tgrk550.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -39,6 +39,24 @@ async function run() {
     // get gallery data(image) from database
     app.get("/get-gallery-images", async (req, res) => {
       const result = await galleryDataCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.patch("/update-selected-image/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedImage = req.body;
+      const image = {
+        $set: {
+          isChecked: updatedImage.isChecked,
+        },
+      };
+      const result = await galleryDataCollection.updateOne(
+        filter,
+        image,
+        options
+      );
       res.send(result);
     });
 
