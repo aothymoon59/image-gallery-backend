@@ -9,6 +9,7 @@ app.use(cors());
 app.use(express.json());
 
 const { MongoClient, ServerApiVersion } = require("mongodb");
+// const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.tgrk550.mongodb.net/?retryWrites=true&w=majority`;
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.tgrk550.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -24,13 +25,20 @@ async function run() {
   try {
     // await client.connect();
     const galleryDataCollection = client
-      .db("imageGalleryDB ")
-      .collection("images");
+      .db("galleryDB")
+      .collection("galleryData");
 
     // post gallery data(image) to database
     app.post("/upload-image", async (req, res) => {
       const imageData = req.body;
-      const result = await usersCollection.insertOne(imageData);
+      console.log(imageData);
+      const result = await galleryDataCollection.insertOne(imageData);
+      res.send(result);
+    });
+
+    // get gallery data(image) from database
+    app.get("/get-gallery-images", async (req, res) => {
+      const result = await galleryDataCollection.find().toArray();
       res.send(result);
     });
 
