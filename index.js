@@ -60,6 +60,17 @@ async function run() {
       res.send(result);
     });
 
+    app.patch("/unselect-all-images", async (req, res) => {
+      const filter = { isChecked: true }; // Filter for all selected images
+      const image = {
+        $set: {
+          isChecked: false, // Set the isChecked property to false
+        },
+      };
+      const result = await galleryDataCollection.updateMany(filter, image);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
