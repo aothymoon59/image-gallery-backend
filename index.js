@@ -9,7 +9,7 @@ app.use(cors());
 app.use(express.json());
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-// const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.tgrk550.mongodb.net/?retryWrites=true&w=majority`;
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.tgrk550.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -23,7 +23,6 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // await client.connect();
     const galleryDataCollection = client
       .db("galleryDB")
       .collection("galleryData");
@@ -42,6 +41,7 @@ async function run() {
       res.send(result);
     });
 
+    // select api
     app.patch("/update-selected-image/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -60,15 +60,37 @@ async function run() {
       res.send(result);
     });
 
+    // unselect all
     app.patch("/unselect-all-images", async (req, res) => {
-      const filter = { isChecked: true }; // Filter for all selected images
+      const filter = { isChecked: true };
       const image = {
         $set: {
-          isChecked: false, // Set the isChecked property to false
+          isChecked: false,
         },
       };
       const result = await galleryDataCollection.updateMany(filter, image);
       res.send(result);
+    });
+
+    // delete selected images
+    app.delete("/delete-selected-images", async (req, res) => {
+      try {
+        const result = await galleryDataCollection.deleteMany({
+          isChecked: true,
+        });
+        if (result.deletedCount > 0) {
+          res.send({
+            success: true,
+            message: `${result.deletedCount} images deleted successfully.`,
+          });
+        } else {
+          res.send({ success: false, message: "No images deleted." });
+        }
+      } catch (error) {
+        res
+          .status(500)
+          .send({ success: false, message: "Error deleting images." });
+      }
     });
 
     // Send a ping to confirm a successful connection
@@ -77,7 +99,6 @@ async function run() {
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
   } finally {
-    // Ensures that the client will close when you finish/error
     // await client.close();
   }
 }
